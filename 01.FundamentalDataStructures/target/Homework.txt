@@ -1,0 +1,4 @@
+1. Queues - ticket system END
+2. Stacks - Price history END
+3. Maps - phonebook, add 5 numbers, END
+4. Set - same as phonebook but only remembers names END
