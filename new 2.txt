@@ -1,0 +1,91 @@
+* BISVanillaTest_baseclassObsolete.java
+ *
+ * created at 04.03.2016 by Dominik Pfrommer <d.pfrommer@seeburger.de>
+ *
+ * Copyright (c) SEEBURGER AG, Germany. All Rights Reserved.
+ */
+package com.seeburger.test;
+
+
+import java.io.IOException;
+import java.net.URL;
+
+import org.apache.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
+import com.seeburger.test.api.util.TestNGWatcher;
+import com.seeburger.test.api.util.TestPhases;
+import com.seeburger.test.api.products.BIS;
+import com.seeburger.test.api.products.BIS.Landscape;
+import com.seeburger.test.api.setup.Installer;
+
+
+@Listeners(TestNGWatcher.class)
+public class BISVanillaTest_baseclassObsolete
+{
+    private static final Logger log = Logger.getLogger(BISVanillaTest_baseclassObsolete.class);
+
+
+    @Test(description = "Set up a BIS on an AllInOne Instance", groups = TestPhases.SETUP)
+    public static void setupBIS()
+        throws Exception
+    {
+        String isoName = System.getProperty("iso.name", "");
+        String isoBaseURL = System.getProperty("iso.base.url", "");
+
+        /*
+         * Default is last Release ISO
+         */
+        URL bisISOURL = new URL(BIS.LAST_RELEASE_URL);
+
+        if (!isoName.isEmpty() && !isoBaseURL.isEmpty())
+        {
+            log.info("Using ISO from URL '" + isoBaseURL + "/" + isoName + "'.");
+            bisISOURL = new URL(isoBaseURL + "/" + isoName);
+        }
+        else
+        {
+            log.info("Using Latest Release iso since iso.base.url and iso.name are empty.");
+        }
+
+        BIS bis = new BIS(bisISOURL, Landscape.ALL_IN_ONE);
+
+        bis.getInstances().get(0).getHw().setRam(8192);
+        bis.getInstances().get(0).getHw().setCpu(4);
+
+        try
+        {
+            Installer.up(bis);
+            //bis.getInstances().get(0).setXmx(4);
+        }
+        catch (Exception e)
+        {
+            log.error("BIS Installation failed.", e);
+            Assert.fail("BIS Installation failed.", e);
+        }
+
+        Assert.assertTrue(Installer.isInstalledCorrect(), "BIS is not set up correctly.");
+
+        log.info("Running register");
+        Assert.assertTrue(bis.runRegister(), "Register failed!");
+    }
+
+    @AfterSuite
+    public void destroyMachines()
+        throws InterruptedException, IOException
+    {
+        /*
+         * If system property env.keep is set to true, only get Logs and do not kill the environment.
+         */
+        if (System.getProperty("env.keep", "false").equals("true"))
+        {
+            Installer.getAllLogs();
+        }
+        else
+        {
+            Installer.destroyAll();
+        }
+    }
+}

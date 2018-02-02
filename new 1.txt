@@ -1,0 +1,11 @@
+Ето я и първата задача.
+С помощта на API-то, трябва да се случи следното.
+
+•	BIS AIO to be installed.
+•	MFT solution deployment.
+•	Test* configuration deployment via MTP.
+•	Test execution.
+•	Process check.
+
+*:  Конфигурирания при теб МФТ сценарий(HF to FTP to SFTP …….)
+
